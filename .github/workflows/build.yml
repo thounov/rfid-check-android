@@ -3,12 +3,12 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:   # 수동 실행 버튼
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -23,37 +23,53 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            git zip unzip openjdk-17-jdk \
+            git zip unzip wget curl \
+            openjdk-17-jdk \
             build-essential ccache \
-            libssl-dev libffi-dev \
-            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
-            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev \
-            libgstreamer1.0-dev gstreamer1.0-plugins-base
+            libssl-dev libffi-dev python3-dev \
+            libsdl2-dev libsdl2-image-dev \
+            libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev \
+            libavformat-dev libavcodec-dev \
+            zlib1g-dev \
+            autoconf automake libtool \
+            pkg-config cmake ninja-build
 
-      - name: Install buildozer & Cython
+      - name: Install Python build tools
         run: |
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.37
+          pip install --upgrade pip wheel setuptools
+          pip install cython==0.29.37
+          pip install buildozer==1.5.0
 
-      - name: Cache buildozer global dir
+      - name: Cache Buildozer global directory
         uses: actions/cache@v4
         with:
           path: ~/.buildozer
-          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v2
           restore-keys: |
             buildozer-${{ runner.os }}-
 
-      - name: Build APK
-        run: |
-          buildozer -v android debug 2>&1 | tail -100
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/buildozer.spec') }}
 
-      - name: Upload APK artifact
+      - name: Build APK
+        env:
+          ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
+        run: |
+          buildozer -v android debug 2>&1
+
+      - name: Find APK
+        run: |
+          find . -name "*.apk" 2>/dev/null
+          ls -lh bin/*.apk 2>/dev/null || echo "bin/ 폴더 없음"
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: rfid-check-apk
           path: bin/*.apk
+          if-no-files-found: warn
           retention-days: 30
-
-      - name: Show APK info
-        run: |
-          ls -lh bin/*.apk 2>/dev/null || echo "APK not found"
