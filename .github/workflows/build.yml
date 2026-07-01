@@ -45,35 +45,42 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android NDK r23b
+      - name: Install Android NDK r23b and platform
         run: |
-          echo "y" | sdkmanager "ndk;23.1.7779620" --sdk_root=$ANDROID_SDK_ROOT
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.1.7779620" >> $GITHUB_ENV
+          echo "y" | sdkmanager "ndk;23.1.7779620" "platforms;android-31" "build-tools;31.0.0" --sdk_root=$ANDROID_SDK_ROOT
 
-      - name: Install Android build tools & platform
+      - name: Prepare buildozer dirs and symlinks
         run: |
-          echo "y" | sdkmanager "platforms;android-31" "build-tools;31.0.0" --sdk_root=$ANDROID_SDK_ROOT
+          # buildozer가 사용할 경로 생성 (runner 홈 디렉터리 = /home/runner)
+          mkdir -p $HOME/.buildozer/android/platform
 
-      - name: Prepare buildozer dirs
-        run: |
-          mkdir -p ~/.buildozer/android/platform
-          # SDK 심볼릭 링크 — buildozer가 찾는 경로로 연결
-          ln -sfn $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
-          ln -sfn $ANDROID_NDK_HOME ~/.buildozer/android/platform/android-ndk-r23b
+          # SDK/NDK를 buildozer가 기대하는 경로로 심볼릭 링크
+          ln -sfn $ANDROID_SDK_ROOT \
+            $HOME/.buildozer/android/platform/android-sdk
 
-      - name: Cache Buildozer
+          NDK_PATH="$ANDROID_SDK_ROOT/ndk/23.1.7779620"
+          ln -sfn $NDK_PATH \
+            $HOME/.buildozer/android/platform/android-ndk-r23b
+
+          echo "BUILDOZER_HOME=$HOME/.buildozer" >> $GITHUB_ENV
+          echo "NDK_PATH=$NDK_PATH" >> $GITHUB_ENV
+
+          # 경로 확인
+          ls $HOME/.buildozer/android/platform/
+
+      - name: Cache p4a build
         uses: actions/cache@v4
         with:
-          path: ~/.buildozer/android/platform/build-arm64-v8a
-          key: p4a-build-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v6
+          path: ${{ env.BUILDOZER_HOME }}/android/platform/build-arm64-v8a
+          key: p4a-build-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v7
           restore-keys: p4a-build-${{ runner.os }}-
 
       - name: Build APK
         env:
-          ANDROIDSDK:  ${{ env.ANDROID_SDK_ROOT }}
-          ANDROIDNDK:  ${{ env.ANDROID_NDK_HOME }}
-          ANDROIDAPI:  "31"
-          NDKAPI:      "26"
+          ANDROIDSDK: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROIDNDK: ${{ env.NDK_PATH }}
+          ANDROIDAPI: "31"
+          NDKAPI:     "26"
         run: |
           buildozer -v android debug 2>&1
 

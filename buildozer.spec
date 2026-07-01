@@ -23,9 +23,7 @@ android.ndk_api = 26
 android.accept_sdk_license = True
 android.archs = arm64-v8a
 
-# SDK/NDK 경로 — GitHub Actions에서 미리 설치한 경로를 사용
-android.sdk_path = /root/.buildozer/android/platform/android-sdk
-android.ndk_path = /root/.buildozer/android/platform/android-ndk-r23b
+# SDK/NDK 경로는 환경변수(ANDROIDSDK/ANDROIDNDK)로 전달하므로 spec에서 제거
 
 [buildozer]
 log_level = 2
