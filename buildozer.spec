@@ -17,13 +17,10 @@ android.permissions = NFC
 android.features = android.hardware.nfc
 
 android.minapi = 26
-android.api = 31
-android.ndk = 23b
-android.ndk_api = 26
+android.api = 33
+android.ndk = 25b
 android.accept_sdk_license = True
 android.archs = arm64-v8a
-
-# SDK/NDK 경로는 환경변수(ANDROIDSDK/ANDROIDNDK)로 전달하므로 spec에서 제거
 
 [buildozer]
 log_level = 2
