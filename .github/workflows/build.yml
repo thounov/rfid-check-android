@@ -35,7 +35,7 @@ jobs:
           pip install --upgrade pip
           pip install "cython==0.29.37"
           pip install "buildozer==1.2.0"
-          pip install "python-for-android==2022.6.5"
+          pip install "python-for-android==2022.3.13"
 
       - name: Cache Buildozer
         uses: actions/cache@v4
@@ -43,7 +43,7 @@ jobs:
           path: |
             ~/.buildozer
             ~/.gradle
-          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v4
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v5
           restore-keys: buildozer-${{ runner.os }}-
 
       - name: Build APK
