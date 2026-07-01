@@ -23,48 +23,32 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            git zip unzip wget curl \
+            git zip unzip wget \
             openjdk-17-jdk \
             build-essential ccache \
             libssl-dev libffi-dev python3-dev \
-            libsdl2-dev libsdl2-image-dev \
-            libsdl2-mixer-dev libsdl2-ttf-dev \
-            libportmidi-dev libswscale-dev \
-            libavformat-dev libavcodec-dev \
-            zlib1g-dev \
-            autoconf automake libtool \
-            pkg-config cmake ninja-build
+            zlib1g-dev autoconf automake libtool \
+            pkg-config cmake
 
       - name: Install Python build tools
         run: |
-          pip install --upgrade pip wheel setuptools
-          pip install cython==0.29.37
-          pip install buildozer==1.5.0
+          pip install --upgrade pip
+          pip install "cython==0.29.37"
+          pip install "buildozer==1.5.0"
+          pip install "python-for-android==2023.9.16"
 
-      - name: Cache Buildozer global directory
+      - name: Cache Buildozer
         uses: actions/cache@v4
         with:
-          path: ~/.buildozer
-          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v2
-          restore-keys: |
-            buildozer-${{ runner.os }}-
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('**/buildozer.spec') }}
+          path: |
+            ~/.buildozer
+            ~/.gradle
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v3
+          restore-keys: buildozer-${{ runner.os }}-
 
       - name: Build APK
-        env:
-          ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
         run: |
           buildozer -v android debug 2>&1
-
-      - name: Find APK
-        run: |
-          find . -name "*.apk" 2>/dev/null
-          ls -lh bin/*.apk 2>/dev/null || echo "bin/ 폴더 없음"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
