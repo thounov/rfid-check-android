@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # 수동 실행 버튼
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            git zip unzip openjdk-17-jdk \
+            build-essential ccache \
+            libssl-dev libffi-dev \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev \
+            libgstreamer1.0-dev gstreamer1.0-plugins-base
+
+      - name: Install buildozer & Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.37
+
+      - name: Cache buildozer global dir
+        uses: actions/cache@v4
+        with:
+          path: ~/.buildozer
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            buildozer-${{ runner.os }}-
+
+      - name: Build APK
+        run: |
+          buildozer -v android debug 2>&1 | tail -100
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rfid-check-apk
+          path: bin/*.apk
+          retention-days: 30
+
+      - name: Show APK info
+        run: |
+          ls -lh bin/*.apk 2>/dev/null || echo "APK not found"
