@@ -18,7 +18,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .buildozer_cache
-          key: buildozer-docker-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v1
+          key: buildozer-docker-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v2
           restore-keys: buildozer-docker-${{ runner.os }}-
 
       - name: Build APK with Kivy Docker image
@@ -28,6 +28,9 @@ jobs:
             -v ${{ github.workspace }}/.buildozer_cache:/home/user/.buildozer \
             kivy/buildozer:latest \
             android debug
+
+      - name: Find APK
+        run: find . -name "*.apk" 2>/dev/null || echo "APK not found"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
