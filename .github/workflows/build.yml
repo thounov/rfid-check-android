@@ -18,7 +18,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .buildozer_cache
-          key: buildozer-docker-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v2
+          key: buildozer-docker-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}-v3
           restore-keys: buildozer-docker-${{ runner.os }}-
 
       - name: Build APK with Kivy Docker image
