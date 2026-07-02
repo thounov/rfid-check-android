@@ -4,7 +4,7 @@ package.name = rfidcheck
 package.domain = org.wisehealth
 
 source.dir = .
-source.include_exts = py,png,jpg,kv,json
+source.include_exts = py,png,jpg,kv,json,db
 
 version = 1.0.0
 
@@ -14,7 +14,6 @@ orientation = portrait
 fullscreen = 0
 
 android.permissions = NFC
-android.features = android.hardware.nfc
 
 android.minapi = 26
 android.api = 33

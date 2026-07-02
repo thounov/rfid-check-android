@@ -80,6 +80,30 @@ def get_data_dir():
 
 DB_PATH = os.path.join(get_data_dir(), "rfid_check.db")
 
+def _copy_bundled_db():
+    """
+    앱 첫 실행 시 번들 DB(소스 폴더의 rfid_check.db)를
+    앱 데이터 디렉터리로 복사합니다.
+    이미 존재하면 덮어쓰지 않습니다.
+    """
+    if os.path.exists(DB_PATH):
+        return  # 이미 있으면 건드리지 않음
+
+    # 번들 DB 위치 (main.py와 같은 폴더)
+    bundle_db = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "rfid_check.db"
+    )
+    if os.path.exists(bundle_db):
+        import shutil
+        try:
+            os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+            shutil.copy2(bundle_db, DB_PATH)
+        except Exception as e:
+            print(f"번들 DB 복사 실패: {e}")
+
+_copy_bundled_db()
+
 # ════════════════════════════════════════════════════════════════════
 # DB 레이어 (PC 앱 main.py Database 클래스와 동일 로직)
 # ════════════════════════════════════════════════════════════════════
